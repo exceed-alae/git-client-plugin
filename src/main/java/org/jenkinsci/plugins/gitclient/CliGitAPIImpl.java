@@ -2711,6 +2711,11 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
                     sparseCheckout(sparseCheckoutPaths);
 
                     EnvVars checkoutEnv = environment;
+                    if (lfsRemote == null) {
+                        // Disable the git-lfs smudge filter on case of without explicit using "GitLFSPull" extension
+                        checkoutEnv = new EnvVars(checkoutEnv);
+                        checkoutEnv.put("GIT_LFS_SKIP_SMUDGE", "1");
+                    }
 
                     if (branch!=null && deleteBranch) {
                         // First, checkout to detached HEAD, so we can delete the branch.
