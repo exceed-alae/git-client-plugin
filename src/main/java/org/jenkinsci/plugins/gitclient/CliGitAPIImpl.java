@@ -2947,9 +2947,8 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
                     sparseCheckout(sparseCheckoutPaths);
 
                     EnvVars checkoutEnv = environment;
-                    if (lfsRemote != null) {
-                        // Disable the git-lfs smudge filter because it is much slower on
-                        // certain OSes than doing a single "git lfs pull" after checkout.
+                    if (lfsRemote == null) {
+                        // Disable the git-lfs smudge filter on case of without explicit using "GitLFSPull" extension
                         checkoutEnv = new EnvVars(checkoutEnv);
                         checkoutEnv.put("GIT_LFS_SKIP_SMUDGE", "1");
                     }
@@ -2976,22 +2975,18 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
                         args.add("-f");
                     }
                     args.add(ref);
-                    launchCommandIn(args, workspace, checkoutEnv, timeout);
-
                     if (lfsRemote != null) {
                         final String url = getRemoteUrl(lfsRemote);
                         StandardCredentials cred = lfsCredentials;
                         if (cred == null) cred = credentials.get(url);
                         if (cred == null) cred = defaultCredentials;
-                        ArgumentListBuilder lfsArgs = new ArgumentListBuilder();
-                        lfsArgs.add("lfs");
-                        lfsArgs.add("pull");
-                        lfsArgs.add(lfsRemote);
                         try {
-                            launchCommandWithCredentials(lfsArgs, workspace, cred, new URIish(url), timeout);
+                            launchCommandWithCredentials(args, workspace, cred, new URIish(url), timeout);
                         } catch (URISyntaxException e) {
                             throw new GitException("Invalid URL " + url, e);
                         }
+                    } else {
+                        launchCommandIn(args, workspace, checkoutEnv, timeout);
                     }
                 } catch (GitException e) {
                     if (Pattern.compile("index\\.lock").matcher(e.getMessage()).find()) {
