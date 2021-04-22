@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.gitclient;
 
+import java.util.Locale;
 import org.eclipse.jgit.lib.ObjectId;
 
 /**
@@ -33,12 +34,12 @@ public interface MergeCommand extends GitCommand {
      */
     MergeCommand setStrategy(Strategy strategy);
 
-    public enum Strategy {
+    enum Strategy {
         DEFAULT, RESOLVE, RECURSIVE, OCTOPUS, OURS, SUBTREE, RECURSIVE_THEIRS;
 
         @Override
         public String toString() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.ENGLISH); // Avoid Turkish 'i' conversion
         }
     }
 
@@ -52,14 +53,14 @@ public interface MergeCommand extends GitCommand {
      */
     MergeCommand setGitPluginFastForwardMode(GitPluginFastForwardMode fastForwardMode);
 
-    public enum GitPluginFastForwardMode {
+    enum GitPluginFastForwardMode {
         FF,        // Default option, fast forward update the branch pointer only
         FF_ONLY,   // Create a merge commit even for a fast forward
         NO_FF;     // Abort unless the merge is a fast forward
 
         @Override
         public String toString() {
-            return "--"+name().toLowerCase().replace("_","-");
+            return "--"+name().toLowerCase(Locale.ENGLISH).replace("_","-"); // Avoid Turkish 'i' issue
         }
     }
 
